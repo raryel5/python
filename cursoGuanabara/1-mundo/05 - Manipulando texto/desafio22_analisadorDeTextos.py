@@ -1,0 +1,8 @@
+frase=input('Digite um nome: ')
+print(frase.upper())
+print(frase.lower())
+frase_sem_espaço=frase.split()
+print(len(''.join(frase_sem_espaço)))
+#frase2= frase.split()
+#print(len(frase2[0]))
+print(len(frase.split()[0]))
