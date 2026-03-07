@@ -1,0 +1,14 @@
+27x : parafusos com bucha 6 mm
+18x : arruelas para os parafusos de 6 mm
+12x : abraçadeiras de 1 polegada
+6x : parafuso sextavado de 6 mm de diâmetro e 3 cm de comprimento
+6x : porca para parafuso sextavado de 6 mm
+6x : arruela para parafuso sextavado de 6 mm
+3x : caixa CFTV
+3x : kit raspberry pi 4
+3x : eletroduto galvanizado de 1 polegada e 1,5 m (no comércio só vendem o de 3 m)
+3x : prensa cab PG-11 p/ cabos 6-10mm
+3x : botão liga/desliga 10 A
+3x : plug macho para tomada 10 A
+6x : conector borne sindal 4 mm
+6x : conector Borne Sindal 10 mm

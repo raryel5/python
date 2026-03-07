@@ -1,0 +1,3 @@
+cebola: 4x
+alho: 6x
+banana: 8x
