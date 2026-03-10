@@ -43,11 +43,11 @@ def calcVariacao(k, m = 0):
         m += 1
 
         dE = abs(var)
-        if dE >= 50 and dE < 100 and count > 6:
+        if dE >= 50 and dE < 100 and count > 5:
             p += 1
             count = 0
 
-        elif dE >= 100 and count > 6:
+        elif dE >= 100 and count > 5:
             pi += 1
             count = 0
 

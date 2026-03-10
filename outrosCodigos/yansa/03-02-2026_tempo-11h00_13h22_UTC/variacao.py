@@ -7,35 +7,63 @@ with open('fm0229.csv', mode='r') as file:
     reader = csv.DictReader(file)
     for linha in reader:
         campo.append(float(linha['Electric_Field_V_m']))
+        # campo.append(float(linha['fm0220']))
 
 # print(len(campo))
 
 variacao = []
+tempo = []
 p = 0
 pi = 0
-k = len(campo)
+Eatual = 0
+Eantes = 0
 
-def calcVariacao(k):
-    global variacao, p, pi, campo
+def calcVariacao(k, m = 0):
+    global variacao, campo, tempo,  p, pi, Eatual, Eantes
 
-    for i in range(1, k+1, 6):
-        # if i >= k+1:
-        #     return variacao, p, pi
+    if m >= k:
+        return variacao, p, pi, Eatual, Eantes
+
+    for i in range(m, k):
         if i == 0:
             variacao.append(0)
-        else:
-            var = campo[i] - campo[i-1]
-            variacao.append(var)
-            if var >= 50 and var < 100:
-                p += 1
-            if var >= 100:
-                pi += 1
-        # calcVariacao(k)
-    return variacao, p, pi
+            tempo.append(0)
+            count = 7
 
-calcVariacao(k) 
+        else:        
+            Eatual = campo[i]
+            Eantes = campo[i-1]
 
-x = list(range(len(variacao)))
+        var = Eatual - Eantes
+        variacao.append(var)
+        tempo.append(i)
+        m += 1
+
+        dE = abs(var)
+        if dE >= 50 and dE < 100 and count > 5:
+            p += 1
+            count = 0
+
+        elif dE >= 100 and count > 5:
+            pi += 1
+            count = 0
+
+        count += 1
+
+    return calcVariacao(k, m)
+
+k = len(campo)
+calcVariacao(k)
+print("Campo:", campo[830])
+print("O valor da posição 831 é: ", variacao[831])
+# print("Campo anterior: ", eAntes)
+# print("Campo atual: ", eAtual)
+
+# print("campo real anterior: ", campo[157])
+# print("campo real atual: ", campo[158])
+
+
+# x = list(range(len(variacao)))
 print("Quantidade de pulsos: ", p)
 print("Quantidade de pulsos intensos: ", pi)
 
@@ -49,18 +77,26 @@ plt.figure(figsize=(8,5))
 # plt.ion()
 
 # plt.title('variações de campo e pulsos', fontsize=16, fontweight='bold', fontstyle='italic', fontfamily='monospace')
-plt.title('variações de campo e pulsos', fontsize=16, fontweight='bold', fontfamily='monospace')
+plt.title('Variações de campo e pulsos - Python', fontsize=16, fontweight='bold', fontfamily='monospace')
 plt.xlabel('tempo', fontsize=10, fontfamily='monospace')
 plt.ylabel('V/m', fontsize=10, fontfamily='monospace')
-plt.tight_layout()
-plt.scatter(x, variacao, label='pulsos')
+# plt.tight_layout()
+
+legenda = "Pulsos: " + str(p) + "\n PI: " + str(pi)
+
 # plt.scatter(x, variacao, label="pulsos")
+plt.scatter(tempo, variacao, label=legenda)
 plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
 plt.show()
 
 # plt.pause(5)
 
 # plt.ioff()
+
+# Plot número 2
+# plt.scatter(tempo, campo, label=legenda)
+# plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
+# plt.show()
 
 
 # Data ISO 8601 (com fuso UTC 'Z')
