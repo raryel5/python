@@ -16,12 +16,20 @@ def main(page:ft.Page):
     stack_main = ft.Stack(
         expand = True,
         controls = [
+            ft.Container(
+                content = ft.Image(
+                    src='/space.jpg',
+                    width=800,
+                    height=500,
+                    # fit=ft.BoxFit.COVER
+                )
+            ),            
             ft.WindowDragArea(expand=True, content=ft.Container(bgcolor='white'))
         ]
     )
 
-    page.update(stack_main)
+    page.add(stack_main)
 
 if __name__ == '__main__':
-    ft.app(target=main)
+    ft.app(target=main, assets_dir='assets')
     
