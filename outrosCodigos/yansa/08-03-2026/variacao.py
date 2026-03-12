@@ -2,19 +2,26 @@ import csv
 import matplotlib.pyplot as plt
 
 campo = []
+campoColum = []
 arquivo = "freg_2026-03-08.csv"
 # arquivo = "RASP0004-17h-UTC.csv"
 # arquivo = "fm0220.csv"
 
-# encoding='utf-8'
+# indice = 2
 
-# with open(arquivo, mode='r') as file:
-with open(arquivo) as file:
-
+with open(arquivo, mode='r', encoding='utf-8') as file:
+    # reader = csv.reader(file, delimiter=',')
     reader = csv.DictReader(file)
+    # next(reader)
     for linha in reader:
         # campo.append(float(linha['Electric_Field_V_m']))
-        campo.append(float(linha['fm0220']))
+        campoColum.append(linha['fm0220'])
+        # campo.append(linha[indice])
+
+    # passo para converter a coluna de strings em coluna de floats
+    for i in range(len(campoColum) - 1):
+        campo.append(float(campoColum[i]))
+
 
 # print(len(campo))
 
