@@ -1,9 +1,12 @@
 import csv
 import matplotlib.pyplot as plt
 
-class Pulsodetect:
+class FunctionsCalc:
     """
     Classe para detectar pulsos elétricos.
+
+    Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
+    plotContra("X","Y")
     """
     def __init__(self, arquivo):
         self.arquivo = arquivo
@@ -15,6 +18,9 @@ class Pulsodetect:
         self.pi = 0
         self.Eatual = 0
         self.Eantes = 0
+        self.colunmNorm = []
+        self.colunmOrden = []
+
 
     def extractColumn(self, coluna):
         with open(self.arquivo, mode='r', encoding='utf-8') as file:
@@ -60,6 +66,37 @@ class Pulsodetect:
 
         return self.calcVariacao(m)
 
+    def normalizar(self, coluna):
+        self.extractColumn(coluna)
+        # print(f"O valor máximo de {coluna} é {max(self.campo)}")
+        # print(f"O valor mínimo de {coluna} é {min(self.campo)}")
+
+        for i in range(len(self.campo)-1):
+            valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
+            self.colunmNorm.append(valueNorm)
+
+        self.colunmOrdem = self.quicksort(self.colunmNorm)
+        
+        # array.sort()
+
+        # Ordenação Bluble sort
+        # for j in range(len(array)-1):
+        #     for i in range(len(array)-1-j):
+        #         if array[i] > array[i+1]:
+        #             a = array[i+1]
+        #             array[i+1] = array[i]
+        #             array[i] = a
+
+    # Ordenação Quicksort
+    def quicksort(self, array):
+        if len(array) < 2:
+            return array
+        else:
+            pivo = array[0]
+            menores = [i for i in array[1:] if i <= pivo]
+            maiores = [i for i in array[1:] if i > pivo]                
+            return self.quicksort(menores) + [pivo] + self.quicksort(maiores)
+
     def plotar(self, coluna):
         self.extractColumn(coluna)
 
@@ -68,10 +105,8 @@ class Pulsodetect:
         print("Quantidade de pulsos: ", self.p)
         print("Quantidade de pulsos intensos: ", self.pi)
 
-        # 
         # configurações de plotagem
-        #
-        # padrão de estilo
+        ## padrão de estilo
         plt.style.use('ggplot')
         plt.figure(figsize=(8,5))
 
@@ -86,6 +121,24 @@ class Pulsodetect:
         
         return plt.show()
 
-fm0234 = Pulsodetect("2026-03-07a09_211e233.csv")
+    def plotContra(self, colunaX, colunaY):
+        self.normalizar(colunaX)
+        Xcolunm = self.colunmOrdem
 
-fm0234.plotar("fm0211")
+        self.normalizar(colunaY)
+        Ycolunm = self.colunmOrdem
+
+        # configurações de plotagem
+        ## padrão de estilo
+        plt.style.use('ggplot')
+        plt.figure(figsize=(8,5))
+        #
+        plt.title('Curva de Calibração', fontsize=16, fontweight='bold', fontfamily='monospace')
+        plt.xlabel('Sensor para calibrar: ' + colunaX, fontsize=10, fontfamily='monospace')
+        plt.ylabel('Referência: ' + colunaY, fontsize=10, fontfamily='monospace')
+        #
+        plt.scatter(Xcolunm, Ycolunm)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
+        
+        return plt.show()
+
