@@ -3,10 +3,13 @@ import matplotlib.pyplot as plt
 
 class FunctionsCalc:
     """
-    Classe para detectar pulsos elétricos.
+    Classe para fazer cálculos de calibração em sensores de campo elétrico.
 
     Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
     plotContra("X","Y")
+
+    A função normalizar utiliza hashmap para otmizar os cálculos.
+
     """
     def __init__(self, arquivo):
         self.arquivo = arquivo
@@ -23,6 +26,7 @@ class FunctionsCalc:
 
 
     def extractColumn(self, coluna):
+        self.campo = []
         with open(self.arquivo, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for linha in reader:
@@ -71,31 +75,59 @@ class FunctionsCalc:
         # print(f"O valor máximo de {coluna} é {max(self.campo)}")
         # print(f"O valor mínimo de {coluna} é {min(self.campo)}")
 
+        # hashmap/dicionário
+        hashLista = {}
+        listaNormal = []
+
         for i in range(len(self.campo)-1):
-            valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
-            self.colunmNorm.append(valueNorm)
+            if hashLista.get(self.campo[i]):
+                listaNormal.append(hashLista[self.campo[i]])
 
-        self.colunmOrdem = self.quicksort(self.colunmNorm)
+            else:
+                valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
+                hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
+                listaNormal.append(valueNorm)
         
-        # array.sort()
+        # self.exportCSV(listaNormal, f'{coluna}-norm.csv')
 
-        # Ordenação Bluble sort
-        # for j in range(len(array)-1):
-        #     for i in range(len(array)-1-j):
-        #         if array[i] > array[i+1]:
-        #             a = array[i+1]
-        #             array[i+1] = array[i]
-        #             array[i] = a
+        # return self.quicksort(listaNormal)
+        self.colunmOrden = listaNormal
+        self.colunmOrden.sort()
+        # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
-    # Ordenação Quicksort
-    def quicksort(self, array):
+    # Método de Ordenação Quicksort
+    def quicksort(self, array):  
+
         if len(array) < 2:
             return array
-        else:
-            pivo = array[0]
-            menores = [i for i in array[1:] if i <= pivo]
-            maiores = [i for i in array[1:] if i > pivo]                
-            return self.quicksort(menores) + [pivo] + self.quicksort(maiores)
+        
+        pivo = array[0]
+        menores = []
+        maiores = []
+        for i in array[1:]:
+            if i <= pivo:
+                menores.append(i)
+            else:
+                maiores.append(i)
+
+        return self.quicksort(menores) + [pivo] + self.quicksort(maiores)
+
+    def exportCSV(self, lista, name):
+        # Abrir arquivo para escrita ('w'), usando 'newline' para evitar linhas em branco extras
+        with open(name, 'w', newline='', encoding='utf-8') as arquivo:
+            writer = csv.writer(arquivo)
+
+            # Escrever cabeçalho (opcional)
+            writer.writerow(['Valor'])
+
+            # Escrever todas as linhas de uma vez
+            # writer.writerows(lista)
+
+            # Escreve os dados (cada número em uma linha)
+            for value in lista:
+                writer.writerow([value])
+
+        print("CSV exportado com sucesso!")
 
     def plotar(self, coluna):
         self.extractColumn(coluna)
@@ -123,10 +155,12 @@ class FunctionsCalc:
 
     def plotContra(self, colunaX, colunaY):
         self.normalizar(colunaX)
-        Xcolunm = self.colunmOrdem
+        Xcolunm = self.colunmOrden
+        print(f"o tamanho de X é {len(Xcolunm)}")
 
         self.normalizar(colunaY)
-        Ycolunm = self.colunmOrdem
+        Ycolunm = self.colunmOrden
+        print(f"o tamanho de Y é {len(Ycolunm)}")
 
         # configurações de plotagem
         ## padrão de estilo

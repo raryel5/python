@@ -17,6 +17,7 @@ with open(arquivo, mode='r', encoding='utf-8') as file:
         campo.append(float(linha['Electric_Field_V_m']))
         # campoColum.append(linha['fm0220'])
         # campo.append(linha[indice])
+        # campo.append(linha)
 
     # passo para converter a coluna de strings em coluna de floats
     for i in range(len(campoColum) - 1):
