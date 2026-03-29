@@ -1,14 +1,34 @@
 import csv
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import curve_fit
+from scipy.optimize import minimize
 
 class FunctionsCalc:
     """
-    Classe para fazer cálculos de calibração em sensores de campo elétrico.
+    # Classe FunctionsCalc
+    Autor: Renan Aryel
+
+    Classe para fazer cálculos de calibração em sensores de campo elétrico utilizando dados de campo elétrico salvos no formato CSV.
+
+    Para criar o objeto desta classe insira o nome do arquivo CSV como:
+    Ex: sensor.FunctionsCalc("nomeDoArquivo.csv")
+
+    Depois é só aplicar os métodos desejados para trabalhar com esses dados.
+
+    # Método plotContra()
 
     Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
     plotContra("X","Y")
 
-    A função normalizar utiliza hashmap para otmizar os cálculos.
+    # Método normalizar()
+
+    O método normalizar() executa uma normalização de 0 a 1 para um coluna especificada e ordena essa coluna por meio do método sort() do Python. Esse método utiliza hashmap para otmizar os cálculos de normalização.
+    Ex: nomeDoObjeto.normalizar("nomeDaColunaNoCSV")
+
+    # Referências
+    - Ajuste Polinomial: https://www.monolitonimbus.com.br/ajuste-de-funcoes-no-python/
+
 
     """
     def __init__(self, arquivo):
@@ -128,6 +148,57 @@ class FunctionsCalc:
                 writer.writerow([value])
 
         print("CSV exportado com sucesso!")
+
+    def ajustePolinomial(self, colunaX, colunaY):
+        print("Iniciando normalização e ordenação dos dados...")
+
+        self.normalizar(colunaX)
+        Xcolunm = self.colunmOrden
+
+        self.normalizar(colunaY)
+        Ycolunm = self.colunmOrden
+
+        print("Normalização completa.")
+
+        x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
+
+        print("Iniciando ajuste polinomial...")
+
+        def func(x, a, b, c, d):
+            return a*x**3 + b*x**2 + c*x + d
+
+        popt, pcov = curve_fit(func, x, y)
+
+        fig, ax = plt.subplots()
+
+        legenda = 'a=%5.4f * x**3 + b=%5.4f c=%5.4f d=%5.4f' %tuple(popt)
+
+        plt.plot(x, y, '*')
+        plt.plot(x, func(x, *popt), label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
+        textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
+
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10,
+                verticalalignment='top')
+
+        
+
+        plt.title('Ajuste polinomial de grau 3')
+        plt.show()
+
+        # deg = 3
+        # z = np.polyfit(x, y, deg)
+        # y2 = np.poly1d(z)
+
+        # plt.plot(x, y, "*")
+        # plt.plot(x, y2(x), "-")
+        # plt.title('Ajuste polinomial de grau 3')
+        # plt.show()
+
+    def plotAjuste(self):
+        print()
+
 
     def plotar(self, coluna):
         self.extractColumn(coluna)
