@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+import statsmodels.api as sm
+
 
 class FunctionsCalc:
     """
@@ -163,6 +167,40 @@ class FunctionsCalc:
         x = np.array(Xcolunm)
         y = np.array(Ycolunm)
 
+        # Soma dos Quadrados dos Resíduos
+        ss_res = np.sum((x - y) ** 2)
+
+        # Soma Total dos Quadrados
+        ss_tot = np.sum((x - np.mean(x)) ** 2)
+
+        # R-quadrado
+        r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.4f}")
+
+        # Cálculo do R-quadrado
+        # 1. Criar e treinar o modelo
+        # modelo = LinearRegression()
+        # modelo.fit(x, y)
+
+        # 2. Fazer previsões
+        # y_pred = modelo.predict(x)
+
+        # 3. Calcular o R-quadrado
+        # r2 = r2_score(y, y_pred)
+        # Alternativamente: r2 = modelo.score(X, y)
+        # print(f"R-quadrado: {r2:.4f}")
+
+        # 2. Adicionar constante (necessário no statsmodels)
+        # x = sm.add_constant(x)
+
+        # 3. Ajustar o modelo OLS (Ordinary Least Squares)
+        # modelo = sm.OLS(y, x).fit()
+
+        # 4. Obter o R-quadrado
+        # r2 = modelo.rsquared
+
+
+
         print("Iniciando ajuste polinomial...")
 
         def func(x, a, b, c, d):
@@ -172,8 +210,9 @@ class FunctionsCalc:
 
         fig, ax = plt.subplots()
 
-        legenda = 'a=%5.4f * x**3 + b=%5.4f c=%5.4f d=%5.4f' %tuple(popt)
-
+        legenda = f'%5.4f x³ + %5.4f x² + %5.4f x + %5.4f\n{r2:.4f}' %tuple(popt)
+        
+        plt.grid(True)
         plt.plot(x, y, '*')
         plt.plot(x, func(x, *popt), label=legenda)
         plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
