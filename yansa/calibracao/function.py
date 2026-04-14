@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
-from sklearn.linear_model import LinearRegression
+# from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-import statsmodels.api as sm
+# import statsmodels.api as sm
+import pandas as pd
 
 
 class FunctionsCalc:
@@ -117,6 +118,7 @@ class FunctionsCalc:
         # return self.quicksort(listaNormal)
         self.colunmOrden = listaNormal
         self.colunmOrden.sort()
+
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
         # return f"O valor máximo de {coluna} normalizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
@@ -155,7 +157,26 @@ class FunctionsCalc:
 
         print("CSV exportado com sucesso!")
 
-    def ajustePolinomial(self, colunaX, colunaY):
+    def correlacaoBruta(self, colunaX, colunaY):
+
+        self.extractColumn(colunaX)
+        Xcolunm = self.campo
+
+        self.extractColumn(colunaY)
+        Ycolunm = self.campo
+
+        data = {
+            'variavel_x': Xcolunm,
+            'variavel_y': Ycolunm
+        }
+        df = pd.DataFrame(data)
+
+        # Calcular correlação de Pearson (padrão)
+        correlacao = df['variavel_x'].corr(df['variavel_y'])
+        print(f"Correlação: {correlacao}")
+    
+    def correlacaoNormalized(self, colunaX, colunaY):
+
         print("Iniciando normalização e ordenação dos dados...")
 
         self.normalizar(colunaX)
@@ -166,46 +187,88 @@ class FunctionsCalc:
 
         print("Normalização completa.")
 
+        data = {
+            'variavel_x': Xcolunm,
+            'variavel_y': Ycolunm
+        }
+        df = pd.DataFrame(data)
+
+        ## Calcular correlação de Pearson (padrão)
+        print("Calculando correlação de Pearson...")
+        correlacao = df['variavel_x'].corr(df['variavel_y'])
+        print(f"Correlação: {correlacao}")
+
+    def ajustePolinbruto(self, colunaX, colunaY):
+        
+        self.extractColumn(colunaX)
+        Xcolunm = self.campo
+
+        self.extractColumn(colunaY)
+        Ycolunm = self.campo
+
+        x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
+
+        #
+        ## com Sklearn
+        #
+        r2 = r2_score(x, y)
+        print(f"O R-quadrado: {r2:.3f}")
+
+        print("Iniciando ajuste polinomial...")
+
+        def func(x, a, b, c, d):
+            return a*x**3 + b*x**2 + c*x + d
+
+        popt, pcov = curve_fit(func, x, y)
+
+        print("Ajuste completo!")
+
+        fig, ax = plt.subplots()
+
+        legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt) 
+        
+        plt.grid(True)
+        plt.plot(x, y, '*')
+        plt.plot(x, func(x, *popt), label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')     
+
+        plt.title('Ajuste polinomial de grau 3')
+        plt.show()
+
+    def ajustePolinomial(self, colunaX, colunaY):
+        print("Iniciando normalização e ordenação dos dados...")
+
+        self.normalizar(colunaX)
+        Xcolunm = self.colunmOrden
+
+        self.normalizar(colunaY)
+        Ycolunm = self.colunmOrden
+
+        print("Normalização completa.")
         print("Calculando o R-quadrado...")
 
         x = np.array(Xcolunm)
         y = np.array(Ycolunm)
 
-        # Soma dos Quadrados dos Resíduos (SSR)
-        ss_res = np.sum((x - y) ** 2)
-        print(f"SSR: {ss_res}")
+        # ## Soma dos Quadrados dos Resíduos (SSR)
+        # ss_res = np.sum((x - y) ** 2)
+        # print(f"SSR: {ss_res}")
         
-        # Soma Total dos Quadrados (TSS)
-        media = np.mean(x)
-        ss_tot = np.sum((x - media) ** 2)
-        print(f"TSS: {ss_tot}")
+        # ## Soma Total dos Quadrados (TSS)
+        # media = np.mean(y)
+        # ss_tot = np.sum((y - media) ** 2)
+        # print(f"TSS: {ss_tot}")
 
-        # R-quadrado
-        r2 = 1 - (ss_res / ss_tot)
-        print(f"R-quadrado: {r2:.3f}")
+        # ## R-quadrado
+        # r2 = 1 - (ss_res / ss_tot)
+        # print(f"R-quadrado: {r2:.3f}")
 
-        # Cálculo do R-quadrado
-        # 1. Criar e treinar o modelo
-        # modelo = LinearRegression()
-        # modelo.fit(x, y)
-
-        # 2. Fazer previsões
-        # y_pred = modelo.predict(x)
-
-        # 3. Calcular o R-quadrado
-        # r2 = r2_score(y, y_pred)
-        # Alternativamente: r2 = modelo.score(X, y)
-        # print(f"R-quadrado: {r2:.4f}")
-
-        # 2. Adicionar constante (necessário no statsmodels)
-        # x = sm.add_constant(x)
-
-        # 3. Ajustar o modelo OLS (Ordinary Least Squares)
-        # modelo = sm.OLS(y, x).fit()
-
-        # 4. Obter o R-quadrado
-        # r2 = modelo.rsquared
-
+        #
+        ## com Sklearn
+        #
+        r2 = r2_score(x, y)
+        print(f"O R-quadrado: {r2:.3f}")
 
 
         print("Iniciando ajuste polinomial...")
