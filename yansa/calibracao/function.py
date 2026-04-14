@@ -1,12 +1,10 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
-# from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-# import statsmodels.api as sm
-import pandas as pd
 
 
 class FunctionsCalc:
@@ -14,22 +12,30 @@ class FunctionsCalc:
     # Classe FunctionsCalc
     Autor: Renan Aryel
 
-    Classe para fazer cálculos de calibração em sensores de campo elétrico utilizando dados de campo elétrico salvos no formato CSV.
+    Classe para fazer cálculos de calibração em sensores de campo elétrico utilizando dados de campo elétrico salvos no formato CSV. O objetivo é obter os coeficientes de um polinômio de grau 3 para ajustar os dados de um sensor em função de outro de referência.
 
     Para criar o objeto desta classe insira o nome do arquivo CSV como:
     Ex: sensor.FunctionsCalc("nomeDoArquivo.csv")
 
     Depois é só aplicar os métodos desejados para trabalhar com esses dados.
 
-    # Método plotContra()
+    # Método extractColunm()
 
-    Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
-    plotContra("X","Y")
+    Passe o nome da coluna para que o método retorne os valores dessa coluna do CSV como uma instância. Os demais métodos utilizam esse como base para os cálculos.
 
     # Método normalizar()
 
     O método normalizar() executa uma normalização de 0 a 1 para um coluna especificada e ordena essa coluna por meio do método sort() do Python. Esse método utiliza hashmap para otmizar os cálculos de normalização.
     Ex: nomeDoObjeto.normalizar("nomeDaColunaNoCSV")
+
+    # Método plotContra()
+
+    Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
+    plotContra("X","Y")
+
+    # Método ajustePolinomial()
+
+    Esse método pega os dados normalizados e busca os coeficientes de um polinômio de ordem 3 que se ajusta aos dados. No final ele plota a curva do método plotContra() e mostra os coeficientes.
 
     # Referências
     - Ajuste Polinomial: https://www.monolitonimbus.com.br/ajuste-de-funcoes-no-python/
@@ -197,8 +203,9 @@ class FunctionsCalc:
         print("Calculando correlação de Pearson...")
         correlacao = df['variavel_x'].corr(df['variavel_y'])
         print(f"Correlação: {correlacao}")
+        print(len(self.campo))
 
-    def ajustePolinbruto(self, colunaX, colunaY):
+    def ajustePolinBruto(self, colunaX, colunaY):
         
         self.extractColumn(colunaX)
         Xcolunm = self.campo
@@ -305,10 +312,6 @@ class FunctionsCalc:
         # plt.plot(x, y2(x), "-")
         # plt.title('Ajuste polinomial de grau 3')
         # plt.show()
-
-    def plotAjuste(self):
-        print()
-
 
     def plotar(self, coluna):
         self.extractColumn(coluna)
