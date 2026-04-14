@@ -7,7 +7,7 @@ yansa2 = function.FunctionsCalc("2026-03-07a09_211e233.csv")
 # yansa2.plotar("fm0211")
 # yansa2.plotar("fm0233")
 
-# yansa2.normalizar("fm0211")
+# print(yansa2.normalizar("fm0211"))
 # yansa2.plotContra("fm0233", "fm0211")
 
 yansa2.ajustePolinomial("fm0233", "fm0211")

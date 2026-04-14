@@ -119,6 +119,8 @@ class FunctionsCalc:
         self.colunmOrden.sort()
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
+        # return f"O valor máximo de {coluna} normalizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
+
     # Método de Ordenação Quicksort
     def quicksort(self, array):  
 
@@ -164,18 +166,23 @@ class FunctionsCalc:
 
         print("Normalização completa.")
 
+        print("Calculando o R-quadrado...")
+
         x = np.array(Xcolunm)
         y = np.array(Ycolunm)
 
-        # Soma dos Quadrados dos Resíduos
+        # Soma dos Quadrados dos Resíduos (SSR)
         ss_res = np.sum((x - y) ** 2)
-
-        # Soma Total dos Quadrados
-        ss_tot = np.sum((x - np.mean(x)) ** 2)
+        print(f"SSR: {ss_res}")
+        
+        # Soma Total dos Quadrados (TSS)
+        media = np.mean(x)
+        ss_tot = np.sum((x - media) ** 2)
+        print(f"TSS: {ss_tot}")
 
         # R-quadrado
         r2 = 1 - (ss_res / ss_tot)
-        print(f"R-quadrado: {r2:.4f}")
+        print(f"R-quadrado: {r2:.3f}")
 
         # Cálculo do R-quadrado
         # 1. Criar e treinar o modelo
@@ -208,20 +215,21 @@ class FunctionsCalc:
 
         popt, pcov = curve_fit(func, x, y)
 
+        print("Ajuste completo!")
+
         fig, ax = plt.subplots()
 
-        legenda = f'%5.4f x³ + %5.4f x² + %5.4f x + %5.4f\n{r2:.4f}' %tuple(popt)
+        legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        # legenda = "f(x) = ax³ + bx² + cx + d"
+        # legenda = f'a=%5.6f\nb=%5.6f\nc=%5.6f\nd=%5.6f' %tuple(popt)        
         
         plt.grid(True)
         plt.plot(x, y, '*')
         plt.plot(x, func(x, *popt), label=legenda)
-        plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
-        textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
+        # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
 
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10,
-                verticalalignment='top')
-
-        
+        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
 
         plt.title('Ajuste polinomial de grau 3')
         plt.show()
