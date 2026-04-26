@@ -1,0 +1,56 @@
+grafo = {}
+
+grafo["inicio"] = {"a":5, "b":2}
+grafo["a"] = {"c":4, "d":2}
+grafo["b"] = {"a":8, "d":7}
+grafo["c"] = {"d":6, "fim":3}
+grafo["d"] = {"fim":1}
+grafo["fim"] = {}
+
+infinito = float("inf")
+
+custos = {
+    "a":5,
+    "b":2,
+    "c":infinito,
+    "d":infinito,
+    "fim":infinito
+    }
+
+
+pais = {
+    "a":"inicio",
+    "b":"inicio",
+    "c":None,
+    "d":None,
+    "fim":None
+    }
+
+processados = set()
+
+def ache_no_custo_mais_baixo(custos):
+    custo_mais_baixo = float("inf")
+    nodo_custo_mais_baixo = None
+    for nodo in custos:
+        custo = custos[nodo]
+        if custo < custo_mais_baixo and nodo not in processados:
+            custo_mais_baixo = custo
+            nodo_custo_mais_baixo = nodo
+    return nodo_custo_mais_baixo
+
+
+nodo = ache_no_custo_mais_baixo(custos)
+
+while nodo is not None:
+    custo = custos[nodo]
+    vizinhos = grafo[nodo]
+    for n in vizinhos.keys():
+        novo_custo = custo + vizinhos[n]
+        if custos[n] > novo_custo:
+            custos[n] = novo_custo
+            pais[n] = nodo
+    processados.add(nodo)
+    nodo = ache_no_custo_mais_baixo(custos)
+
+print(custos)
+print(pais)
