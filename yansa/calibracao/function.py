@@ -259,23 +259,23 @@ class FunctionsCalc:
         y = np.array(Ycolunm)
 
         # ## Soma dos Quadrados dos Resíduos (SSR)
-        # ss_res = np.sum((x - y) ** 2)
-        # print(f"SSR: {ss_res}")
+        ss_res = np.sum((x - y) ** 2)
+        print(f"SSR: {ss_res}")
         
         # ## Soma Total dos Quadrados (TSS)
-        # media = np.mean(y)
-        # ss_tot = np.sum((y - media) ** 2)
-        # print(f"TSS: {ss_tot}")
+        media = np.mean(y)
+        ss_tot = np.sum((y - media) ** 2)
+        print(f"TSS: {ss_tot}")
 
         # ## R-quadrado
-        # r2 = 1 - (ss_res / ss_tot)
-        # print(f"R-quadrado: {r2:.3f}")
+        r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.3f}")
 
         #
         ## com Sklearn
         #
-        r2 = r2_score(x, y)
-        print(f"O R-quadrado: {r2:.3f}")
+        #r2 = r2_score(x, y)
+        #print(f"O R-quadrado: {r2:.3f}")
 
 
         print("Iniciando ajuste polinomial...")
@@ -289,9 +289,9 @@ class FunctionsCalc:
 
         fig, ax = plt.subplots()
 
-        legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f' %tuple(popt)
         # legenda = "f(x) = ax³ + bx² + cx + d"
-        # legenda = f'a=%5.6f\nb=%5.6f\nc=%5.6f\nd=%5.6f' %tuple(popt)        
         
         plt.grid(True)
         plt.plot(x, y, '*')
@@ -312,6 +312,142 @@ class FunctionsCalc:
         # plt.plot(x, y2(x), "-")
         # plt.title('Ajuste polinomial de grau 3')
         # plt.show()
+
+    def ajustePol1(self, colunaX, colunaY):
+        print("Iniciando normalização e ordenação dos dados...")
+
+        self.normalizar(colunaX)
+        Xcolunm = self.colunmOrden
+
+        self.normalizar(colunaY)
+        Ycolunm = self.colunmOrden
+
+        print("Normalização completa.")
+        print("Calculando o R-quadrado...")
+
+        x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
+
+        # ## Soma dos Quadrados dos Resíduos (SSR)
+        ss_res = np.sum((x - y) ** 2)
+        print(f"SSR: {ss_res}")
+        
+        # ## Soma Total dos Quadrados (TSS)
+        media = np.mean(y)
+        ss_tot = np.sum((y - media) ** 2)
+        print(f"TSS: {ss_tot}")
+
+        # ## R-quadrado
+        r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.3f}")
+
+        #
+        ## com Sklearn
+        #
+        #r2 = r2_score(x, y)
+        #print(f"O R-quadrado: {r2:.3f}")
+
+
+        print("Iniciando ajuste polinomial...")
+
+        def func(x, c, d):
+            return c*x + d
+
+        popt, pcov = curve_fit(func, x, y)
+
+        print("Ajuste completo!")
+
+        fig, ax = plt.subplots()
+
+        #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        legenda = f'x1=%5.6f\nx0=%5.6f' %tuple(popt)
+        # legenda = "f(x) = ax³ + bx² + cx + d"
+        
+        plt.grid(True)
+        plt.plot(x, y, '*')
+        plt.plot(x, func(x, *popt), label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
+        # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
+
+        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+
+        plt.title('Ajuste polinomial de grau 1')
+        plt.show()
+
+    def analise(self, colunaX, colunaY):
+        print("Iniciando normalização e ordenação dos dados...")
+
+        self.normalizar(colunaX)
+        Xcolunm = self.colunmOrden
+
+        self.normalizar(colunaY)
+        Ycolunm = self.colunmOrden
+
+        print("Normalização completa.")
+
+        dfx = pd.DataFrame(Xcolunm)
+        dfy = pd.DataFrame(Ycolunm)
+
+        def transform_data(df, method='log'):
+            if method == 'log':
+                df[0] = np.log(df[0])
+            elif method == 'boxcox':
+                df[0] = stats.boxcox(df[0])[0]
+            return df
+        
+        transform_data(dfx)
+        transform_data(dfy)
+
+        x = np.array(dfx)
+        y = np.array(dfy)
+
+        # ## Soma dos Quadrados dos Resíduos (SSR)
+        ss_res = np.sum((x - y) ** 2)
+        print(f"SSR: {ss_res}")
+        
+        # ## Soma Total dos Quadrados (TSS)
+        media = np.mean(y)
+        ss_tot = np.sum((y - media) ** 2)
+        print(f"TSS: {ss_tot}")
+
+        # ## R-quadrado
+        r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.3f}")
+
+        #
+        ## com Sklearn
+        #
+        #r2 = r2_score(x, y)
+        #print(f"O R-quadrado: {r2:.3f}")
+
+
+        print("Iniciando ajuste polinomial...")
+
+        def func(x, a, b, c, d):
+            return a*x**3 + b*x**2 + c*x + d
+
+        popt, pcov = curve_fit(func, x, y)
+
+        print("Ajuste completo!")
+
+        fig, ax = plt.subplots()
+
+        #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f' %tuple(popt)
+        # legenda = "f(x) = ax³ + bx² + cx + d"
+        
+        plt.grid(True)
+        plt.plot(x, y, '*')
+        plt.plot(x, func(x, *popt), label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
+        # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
+
+        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+
+        plt.title('Ajuste polinomial de grau 3')
+        plt.show()
+
+
 
     def plotar(self, coluna):
         self.extractColumn(coluna)
