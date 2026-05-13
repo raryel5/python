@@ -6,35 +6,39 @@ from scipy.optimize import curve_fit
 from scipy.optimize import minimize
 from sklearn.metrics import r2_score
 
-
 class FunctionsCalc:
     """
     # Classe FunctionsCalc
     Autor: Renan Aryel
 
-    Classe para fazer cálculos de calibração em sensores de campo elétrico utilizando dados de campo elétrico salvos no formato CSV. O objetivo é obter os coeficientes de um polinômio de grau 3 para ajustar os dados de um sensor em função de outro de referência.
+    Classe para fazer cálculos de calibração em sensores de campo elétrico
+    utilizando dados de campo elétrico salvos no formato CSV.
+    O objetivo é obter os coeficientes de um polinômio de grau 3 para
+    ajustar os dados de um sensor em função de outro de referência.
 
     Para criar o objeto desta classe insira o nome do arquivo CSV como:
     Ex: sensor.FunctionsCalc("nomeDoArquivo.csv")
 
-    Depois é só aplicar os métodos desejados para trabalhar com esses dados.
+    Depois, é só aplicar os métodos desejados para trabalhar com esses dados.
 
+    --- MÉTODOS ---
     # Método extractColunm()
-
     Passe o nome da coluna para que o método retorne os valores dessa coluna do CSV como uma instância. Os demais métodos utilizam esse como base para os cálculos.
 
     # Método normalizar()
-
     O método normalizar() executa uma normalização de 0 a 1 para um coluna especificada e ordena essa coluna por meio do método sort() do Python. Esse método utiliza hashmap para otmizar os cálculos de normalização.
-    Ex: nomeDoObjeto.normalizar("nomeDaColunaNoCSV")
+    Ex: nomeDoObjeto.normalizar("tituloDaColunaNoCSV")
+
+    # Método exportCSV()
+    Exporta uma lista em formato csv. Esse método é utilizado dentro de outros métodos.
+    Sintaxe: exportCSV(lista, nomeDoArquivo)
+    Ex: exportCSV(Xcolunm, "colunax.csv")
 
     # Método plotContra()
-
     Para usar a função plotContra insira primeiro a coluna a ser calibrada, em seguida a coluna de referência.
     plotContra("X","Y")
 
     # Método ajustePolinomial()
-
     Esse método pega os dados normalizados e busca os coeficientes de um polinômio de ordem 3 que se ajusta aos dados. No final ele plota a curva do método plotContra() e mostra os coeficientes.
 
     # Referências
@@ -103,8 +107,8 @@ class FunctionsCalc:
 
     def normalizar(self, coluna):
         self.extractColumn(coluna)
-        # print(f"O valor máximo de {coluna} é {max(self.campo)}")
-        # print(f"O valor mínimo de {coluna} é {min(self.campo)}")
+        print(f"O valor máximo de {coluna} é {max(self.campo)}")
+        print(f"O valor mínimo de {coluna} é {min(self.campo)}")
 
         # hashmap/dicionário
         hashLista = {}
@@ -115,13 +119,20 @@ class FunctionsCalc:
                 listaNormal.append(hashLista[self.campo[i]])
 
             else:
-                valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
+                # normalização entre -1 e 1
+                valueNorm = (2*(self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo)))-1
                 hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
                 listaNormal.append(valueNorm)
+
+                # normalização entre 0 e 1
+                # valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
+                # hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
+                # listaNormal.append(valueNorm)
         
         # self.exportCSV(listaNormal, f'{coluna}-norm.csv')
 
         # return self.quicksort(listaNormal)
+        self.colunmNorm = listaNormal
         self.colunmOrden = listaNormal
         self.colunmOrden.sort()
 
@@ -161,7 +172,7 @@ class FunctionsCalc:
             for value in lista:
                 writer.writerow([value])
 
-        print("CSV exportado com sucesso!")
+        print(f"{name} exportado com sucesso!")
 
     def correlacaoBruta(self, colunaX, colunaY):
 
@@ -247,50 +258,59 @@ class FunctionsCalc:
         print("Iniciando normalização e ordenação dos dados...")
 
         self.normalizar(colunaX)
-        Xcolunm = self.colunmOrden
+        Xcolunm = self.colunmNorm
 
         self.normalizar(colunaY)
-        Ycolunm = self.colunmOrden
+        Ycolunm = self.colunmNorm
 
         print("Normalização completa.")
-        print("Calculando o R-quadrado...")
+
+        print("Iniciando ajuste polinomial...")
 
         x = np.array(Xcolunm)
         y = np.array(Ycolunm)
-
-        # ## Soma dos Quadrados dos Resíduos (SSR)
-        ss_res = np.sum((x - y) ** 2)
-        print(f"SSR: {ss_res}")
-        
-        # ## Soma Total dos Quadrados (TSS)
-        media = np.mean(y)
-        ss_tot = np.sum((y - media) ** 2)
-        print(f"TSS: {ss_tot}")
-
-        # ## R-quadrado
-        r2 = 1 - (ss_res / ss_tot)
-        print(f"R-quadrado: {r2:.3f}")
-
-        #
-        ## com Sklearn
-        #
-        #r2 = r2_score(x, y)
-        #print(f"O R-quadrado: {r2:.3f}")
-
-
-        print("Iniciando ajuste polinomial...")
 
         def func(x, a, b, c, d):
             return a*x**3 + b*x**2 + c*x + d
 
         popt, pcov = curve_fit(func, x, y)
 
+        ## Cálculo do R-quadrado
+        print("Calculando o R-quadrado...")
+
+        media = np.mean(y)
+        # print(f"media y: {media}")
+
+        y_fit = func(x, *popt)
+
+        ## Soma dos Quadrados dos Resíduos (SSres)
+        ss_res = np.sum((y - y_fit) ** 2)
+        print(f"SSres: {ss_res}")
+
+        ## Soma dos Quadrados Explicada (SSreg)
+        ss_reg = np.sum((y_fit - media)**2)
+        print(f"SSreg: {ss_reg}")
+        
+        ## Soma Total dos Quadrados (SStot)
+        ss_tot = np.sum((y - media) ** 2)
+        print(f"SStot: {ss_tot}")
+
+        ## R-quadrado
+        r2 = (ss_reg / ss_tot)
+        r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.3f}")
+
+        # r2 = r2_score(y_fit, y)
+        # print(f"O R-quadrado: {r2:.3f}")
+
         print("Ajuste completo!")
+
+        ## Iniciando o plot
 
         fig, ax = plt.subplots()
 
         #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
-        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f' %tuple(popt)
+        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\n R² {r2:.4f}' %tuple(popt)
         # legenda = "f(x) = ax³ + bx² + cx + d"
         
         plt.grid(True)
@@ -378,75 +398,71 @@ class FunctionsCalc:
         print("Iniciando normalização e ordenação dos dados...")
 
         self.normalizar(colunaX)
-        Xcolunm = self.colunmOrden
+        Xcolunm = self.colunmNorm
+        Xcampo = self.campo
 
         self.normalizar(colunaY)
-        Ycolunm = self.colunmOrden
+        Ycolunm = self.colunmNorm
+        Ycampo = self.campo
 
         print("Normalização completa.")
 
-        dfx = pd.DataFrame(Xcolunm)
-        dfy = pd.DataFrame(Ycolunm)
+        # self.exportCSV(Xcolunm, "colunax.csv")
+        # self.exportCSV(Ycolunm, "colunay.csv")
 
-        def transform_data(df, method='log'):
-            if method == 'log':
-                df[0] = np.log(df[0])
-            elif method == 'boxcox':
-                df[0] = stats.boxcox(df[0])[0]
-            return df
-        
-        transform_data(dfx)
-        transform_data(dfy)
+        ## Coeficiente de determinação R2 com Sklearn
+        x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
+        # r2 = r2_score(y, x)
+        # print(f"O R-quadrado: {r2:.3f}")
 
-        x = np.array(dfx)
-        y = np.array(dfy)
-
-        # ## Soma dos Quadrados dos Resíduos (SSR)
-        ss_res = np.sum((x - y) ** 2)
-        print(f"SSR: {ss_res}")
-        
-        # ## Soma Total dos Quadrados (TSS)
+        ## Coeficiente de determinação R2 com NumPy
+        """ x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
         media = np.mean(y)
-        ss_tot = np.sum((y - media) ** 2)
-        print(f"TSS: {ss_tot}")
+        mediaX = np.mean(x)
+        print(f"media y: {media}")
+        print(f"media x: {mediaX}")
 
-        # ## R-quadrado
-        r2 = 1 - (ss_res / ss_tot)
-        print(f"R-quadrado: {r2:.3f}")
+        ## Soma dos Quadrados dos Resíduos (SSres)
+        ss_res = np.sum((y - x) ** 2)
+        print(f"SSres: {ss_res}")
 
-        #
-        ## com Sklearn
-        #
-        #r2 = r2_score(x, y)
-        #print(f"O R-quadrado: {r2:.3f}")
-
-
-        print("Iniciando ajuste polinomial...")
-
-        def func(x, a, b, c, d):
-            return a*x**3 + b*x**2 + c*x + d
-
-        popt, pcov = curve_fit(func, x, y)
-
-        print("Ajuste completo!")
-
-        fig, ax = plt.subplots()
-
-        #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
-        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f' %tuple(popt)
-        # legenda = "f(x) = ax³ + bx² + cx + d"
+        ## Soma dos Quadrados Explicada (SSreg)
+        ss_reg = np.sum((x - media)**2)
+        print(f"SSreg: {ss_reg}")
         
-        plt.grid(True)
-        plt.plot(x, y, '*')
-        plt.plot(x, func(x, *popt), label=legenda)
-        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
-        # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
+        ## Soma Total dos Quadrados (SStot)
+        ss_tot = np.sum((y - media) ** 2)
+        print(f"SStot: {ss_tot}")
 
-        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+        ## R-quadrado
+        r2 = (ss_reg / ss_tot)
+        # r2 = 1 - (ss_res / ss_tot)
+        print(f"R-quadrado: {r2:.3f}") """
 
-        plt.title('Ajuste polinomial de grau 3')
+    def histograma(self, colunaX, colunaY):
+        self.extractColumn(colunaX)
+        Xcampo = self.campo
+
+        self.extractColumn(colunaY)
+        Ycampo = self.campo
+
+        plt.subplot(1, 2, 1)
+        plt.hist(Ycampo, bins=30, color="orange", edgecolor="black")
+        plt.title("Histograma fm0211")
+        plt.xlabel("valor")
+        plt.ylabel("frequência")
+        plt.grid()
+
+        plt.subplot(1, 2, 2)
+        plt.hist(Xcampo, bins=30, color="orange", edgecolor="black")
+        plt.title("Histograma fm0233")
+        plt.xlabel("valor")
+        plt.ylabel("frequência")
+        plt.grid()
+
         plt.show()
-
 
 
     def plotar(self, coluna):
