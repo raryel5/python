@@ -2,9 +2,12 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import plotly.express as px
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
 from sklearn.metrics import r2_score
+
 
 class FunctionsCalc:
     """
@@ -107,38 +110,68 @@ class FunctionsCalc:
 
     def normalizar(self, coluna):
         self.extractColumn(coluna)
-        print(f"O valor máximo de {coluna} é {max(self.campo)}")
-        print(f"O valor mínimo de {coluna} é {min(self.campo)}")
+        # print(f"O valor máximo de {coluna} é {max(self.campo)}")
+        # print(f"O valor mínimo de {coluna} é {min(self.campo)}")
 
         # hashmap/dicionário
         hashLista = {}
-        listaNormal = []
+        lista = []
 
         for i in range(len(self.campo)-1):
             if hashLista.get(self.campo[i]):
-                listaNormal.append(hashLista[self.campo[i]])
+                lista.append(hashLista[self.campo[i]])
 
             else:
                 # normalização entre -1 e 1
                 valueNorm = (2*(self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo)))-1
                 hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
-                listaNormal.append(valueNorm)
+                lista.append(valueNorm)
 
                 # normalização entre 0 e 1
                 # valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
                 # hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
-                # listaNormal.append(valueNorm)
+                # lista.append(valueNorm)
         
         # self.exportCSV(listaNormal, f'{coluna}-norm.csv')
 
         # return self.quicksort(listaNormal)
-        self.colunmNorm = listaNormal
-        self.colunmOrden = listaNormal
-        self.colunmOrden.sort()
+        self.colunmNorm = lista
+        # self.colunmOrden = lista
+        # self.colunmOrden.sort()
 
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
         # return f"O valor máximo de {coluna} normalizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
+
+    def padronizar(self, coluna):
+        self.extractColumn(coluna)
+        # print(f"O valor máximo de {coluna} é {max(self.campo)}")
+        # print(f"O valor mínimo de {coluna} é {min(self.campo)}")
+
+        # hashmap/dicionário
+        hashLista = {}
+        lista = []
+
+        media = np.mean(self.campo)
+        desv_padrao = np.std(self.campo)
+
+        for i in range(len(self.campo)-1):
+            if hashLista.get(self.campo[i]):
+                lista.append(hashLista[self.campo[i]])
+
+            else:
+                # Formula de padronização:
+                valuePadron = (self.campo[i] - media)/(desv_padrao)
+
+                hashLista[self.campo[i]] = valuePadron # arredondado para 4 casas decimais
+                lista.append(valuePadron)
+        
+        self.colunmPadron = lista
+        self.colunmOrden = lista
+        self.colunmOrden.sort()
+
+        # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
+        # return f"O valor máximo de {coluna} padronizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
 
     # Método de Ordenação Quicksort
     def quicksort(self, array):  
@@ -255,15 +288,19 @@ class FunctionsCalc:
         plt.show()
 
     def ajustePolinomial(self, colunaX, colunaY):
-        print("Iniciando normalização e ordenação dos dados...")
+        print("Iniciando o tratamento dos dados...")
 
         self.normalizar(colunaX)
         Xcolunm = self.colunmNorm
-
         self.normalizar(colunaY)
         Ycolunm = self.colunmNorm
-
         print("Normalização completa.")
+
+        # self.padronizar(colunaX)
+        # # Xcolunm = self.colunmPadron
+        # self.padronizar(colunaY)
+        # # Ycolunm = self.colunmPadron
+        # print("Padronização completa.")
 
         print("Iniciando ajuste polinomial...")
 
@@ -395,24 +432,27 @@ class FunctionsCalc:
         plt.show()
 
     def analise(self, colunaX, colunaY):
-        print("Iniciando normalização e ordenação dos dados...")
 
-        self.normalizar(colunaX)
-        Xcolunm = self.colunmNorm
-        Xcampo = self.campo
+        # self.normalizar(colunaX)
+        # Xcolunm = self.colunmNorm
+        # Xcampo = self.campo
+        # self.normalizar(colunaY)
+        # Ycolunm = self.colunmNorm
+        # Ycampo = self.campo
+        # print("Normalização completa.")
 
-        self.normalizar(colunaY)
-        Ycolunm = self.colunmNorm
-        Ycampo = self.campo
-
-        print("Normalização completa.")
+        # self.padronizar(colunaX)
+        # Xcolunm = self.colunmPadron
+        # self.padronizar(colunaY)
+        # Ycolunm = self.colunmPadron
+        # print("Padronização completa.")
 
         # self.exportCSV(Xcolunm, "colunax.csv")
         # self.exportCSV(Ycolunm, "colunay.csv")
 
         ## Coeficiente de determinação R2 com Sklearn
-        x = np.array(Xcolunm)
-        y = np.array(Ycolunm)
+        # x = np.array(Xcolunm)
+        # y = np.array(Ycolunm)
         # r2 = r2_score(y, x)
         # print(f"O R-quadrado: {r2:.3f}")
 
@@ -441,6 +481,75 @@ class FunctionsCalc:
         # r2 = 1 - (ss_res / ss_tot)
         print(f"R-quadrado: {r2:.3f}") """
 
+        # print('Iniciando o histograma...')
+
+        # plt.subplot(1, 2, 1)
+        # plt.hist(Ycolunm, bins=30, color="orange", edgecolor="black")
+        # plt.title("Histograma fm0211")
+        # plt.xlabel("valor")
+        # plt.ylabel("frequência")
+        # plt.grid()
+
+        # plt.subplot(1, 2, 2)
+        # plt.hist(Xcolunm, bins=30, color="orange", edgecolor="black")
+        # plt.title("Histograma fm0233")
+        # plt.xlabel("valor")
+        # plt.ylabel("frequência")
+        # plt.grid()
+
+        print('Iniciando o boxplot...')
+        
+        # Agrupando os dados, calculando a média e o desvio padrão:
+        data = [Ycolunm] + [Xcolunm]
+        media = []
+        desv_padrao = []
+
+        for i in data:
+            media.append(np.mean(i))
+        for j in data:
+            desv_padrao.append(np.std(j))
+
+        plt.figure()
+        plt.boxplot(data, positions=[1, 2], labels=['fm0211', 'fm0233'], boxprops=dict(color='blue'), whiskerprops=dict(color='red'), capprops=dict(color='green'), medianprops=dict(color='orange'), flierprops=dict(markerfacecolor='white', marker='o'))
+
+        # Configurando a média com pontos vermelhos:
+        for i in range(len(media)):
+            plt.plot(i + 1, media[i], 'ro')
+        
+        # Adionando desvio padrão com barras de erro:
+        for i in range(len(desv_padrao)):
+            plt.errorbar(i + 1, media[i], yerr=desv_padrao[i], fmt='o', color='red')
+        
+        # Outras configurações do gráfico:
+        plt.title('Boxplot Agrupado')
+        plt.ylabel('valores')
+        plt.show()
+
+    def trataOutlier(self, coluna):
+        print("Iniciando tratamento de outliers...")
+
+        self.extractColumn(coluna)
+        dados = self.campo
+
+        sigma = "\u03c3"
+        mu = "\u03bc"
+
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
+        cv = (desv_padrao / media) * 100
+
+        print(f"A média ({mu}) de {coluna} é {media:.2f}.")
+        print(f"O {sigma} de {coluna} é {desv_padrao:.2f}.")
+        print(f"O coeficiente de variação de {coluna} é {cv:.2f}.")
+
+        plt.figure()
+        plt.hist(dados, bins=30, color="orange", edgecolor="black")
+        plt.title(f"Histograma {coluna}")
+        plt.xlabel("valor")
+        plt.ylabel("frequência")
+        plt.grid()
+        plt.show()
+    
     def histograma(self, colunaX, colunaY):
         self.extractColumn(colunaX)
         Xcampo = self.campo
@@ -462,7 +571,17 @@ class FunctionsCalc:
         plt.ylabel("frequência")
         plt.grid()
 
+        plt.figure()
+        plt.boxplot(Ycampo)
+        plt.title('Boxplot campo fm0211')
+
+        plt.figure()
+        plt.boxplot(Xcampo)
+        plt.title('Boxplot campo fm0233')
+
         plt.show()
+
+
 
 
     def plotar(self, coluna):
