@@ -460,17 +460,17 @@ class FunctionsCalc:
 
     def analise(self, colunaX, colunaY):
 
-        self.trataOutlier2(colunaX)
+        self.trataOutlier(colunaX)
         self.normalizar2(self.dadosTratados)
-        # Xcolunm = self.colunmNorm
-        Xcolunm = self.colunmOrden
+        Xcolunm = self.colunmNorm
+        # Xcolunm = self.colunmOrden
 
         # self.boxplot1(Xcolunm, colunaX)
 
-        self.trataOutlier2(colunaY)
+        self.trataOutlier(colunaY)
         self.normalizar2(self.dadosTratados)
-        # Ycolunm = self.colunmNorm
-        Ycolunm = self.colunmOrden
+        Ycolunm = self.colunmNorm
+        # Ycolunm = self.colunmOrden
 
         # self.boxplot1(Ycolunm, colunaY)
 
@@ -578,7 +578,7 @@ class FunctionsCalc:
 
         print(f"Estatística para: {coluna}")
         print(f"Média ({mu}): {media:.2f}.")
-        print(f"DF {sigma}: {desv_padrao:.2f}.")
+        print(f"DP {sigma}: {desv_padrao:.2f}.")
         print(f"Coeficiente de variação: {cv:.2f}%.")
 
         # self.histograma1(dados, coluna)
@@ -618,7 +618,7 @@ class FunctionsCalc:
 
         print(f"Estatística para: {coluna}")
         print(f"Média ({mu}): {media:.2f}.")
-        print(f"DF {sigma}: {desv_padrao:.2f}.")
+        print(f"DP {sigma}: {desv_padrao:.2f}.")
         print(f"Coeficiente de variação: {cv:.2f}%.")
 
         # self.histograma1(dados, coluna)
@@ -631,10 +631,13 @@ class FunctionsCalc:
         for i in range(len(dados)-1):
             z_score.append((dados[i] - media)/desv_padrao)
 
+        print(f"Zscore min: {np.min(z_score)}")
+        print(f"Zscore max: {np.max(z_score)}")
+
         dadoTratado = []
 
         for j in range(len(dados)-1):
-            if z_score[j] < 3:
+            if z_score[j] >= 3 or z_score[j] <= -3:
                 dadoTratado.append(media)
             else:
                 dadoTratado.append(dados[j])
@@ -668,7 +671,6 @@ class FunctionsCalc:
         plt.title('Boxplot')
         plt.ylabel('valores')
         plt.show()
-
 
     
     def histograma1(self, dados, coluna):
