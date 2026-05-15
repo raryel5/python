@@ -2,7 +2,7 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+# import seaborn as sns
 import plotly.express as px
 from scipy.optimize import curve_fit
 from scipy.optimize import minimize
@@ -61,6 +61,7 @@ class FunctionsCalc:
         self.Eantes = 0
         self.colunmNorm = []
         self.colunmOrden = []
+        self.dadosTratados = []
 
 
     def extractColumn(self, coluna):
@@ -142,6 +143,32 @@ class FunctionsCalc:
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
         # return f"O valor máximo de {coluna} normalizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
+    
+    def normalizar2(self, dados):
+        
+        # hashmap/dicionário
+        hashLista = {}
+        lista = []
+
+        for i in range(len(dados)-1):
+            if hashLista.get(dados[i]):
+                lista.append(hashLista[dados[i]])
+
+            else:
+                # normalização entre -1 e 1
+                valueNorm = (2*(dados[i] - min(dados))/(max(dados)-min(dados)))-1
+                hashLista[dados[i]] = valueNorm # arredondado para 4 casas decimais
+                lista.append(valueNorm)
+
+                # normalização entre 0 e 1
+                # valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
+                # hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
+                # lista.append(valueNorm)
+        
+        # self.exportCSV(listaNormal, f'{coluna}-norm.csv')
+        self.colunmNorm = lista
+        self.colunmOrden = lista
+        self.colunmOrden.sort()
 
     def padronizar(self, coluna):
         self.extractColumn(coluna)
@@ -433,53 +460,64 @@ class FunctionsCalc:
 
     def analise(self, colunaX, colunaY):
 
-        # self.normalizar(colunaX)
+        self.trataOutlier2(colunaX)
+        self.normalizar2(self.dadosTratados)
         # Xcolunm = self.colunmNorm
-        # Xcampo = self.campo
-        # self.normalizar(colunaY)
+        Xcolunm = self.colunmOrden
+
+        # self.boxplot1(Xcolunm, colunaX)
+
+        self.trataOutlier2(colunaY)
+        self.normalizar2(self.dadosTratados)
         # Ycolunm = self.colunmNorm
-        # Ycampo = self.campo
-        # print("Normalização completa.")
+        Ycolunm = self.colunmOrden
 
-        # self.padronizar(colunaX)
-        # Xcolunm = self.colunmPadron
-        # self.padronizar(colunaY)
-        # Ycolunm = self.colunmPadron
-        # print("Padronização completa.")
+        # self.boxplot1(Ycolunm, colunaY)
 
-        # self.exportCSV(Xcolunm, "colunax.csv")
-        # self.exportCSV(Ycolunm, "colunay.csv")
+        print("Iniciando ajuste polinomial...")
 
-        ## Coeficiente de determinação R2 com Sklearn
-        # x = np.array(Xcolunm)
-        # y = np.array(Ycolunm)
-        # r2 = r2_score(y, x)
-        # print(f"O R-quadrado: {r2:.3f}")
-
-        ## Coeficiente de determinação R2 com NumPy
-        """ x = np.array(Xcolunm)
+        x = np.array(Xcolunm)
         y = np.array(Ycolunm)
+
+        def func(x, a, b, c, d):
+            return a*x**3 + b*x**2 + c*x + d
+
+        popt, pcov = curve_fit(func, x, y)
+
+        ## Cálculo do R-quadrado
+        print("Calculando o R-quadrado...")
+
         media = np.mean(y)
-        mediaX = np.mean(x)
-        print(f"media y: {media}")
-        print(f"media x: {mediaX}")
+        # print(f"media y: {media}")
 
-        ## Soma dos Quadrados dos Resíduos (SSres)
-        ss_res = np.sum((y - x) ** 2)
-        print(f"SSres: {ss_res}")
+        y_fit = func(x, *popt)
 
-        ## Soma dos Quadrados Explicada (SSreg)
-        ss_reg = np.sum((x - media)**2)
-        print(f"SSreg: {ss_reg}")
+        # Coeficiente de determinação R2 com Sklearn
+        r2 = r2_score(y_fit, y)
+        print(f"O R-quadrado: {r2:.3f}")
+   
+
+        print("Ajuste completo!")
+
+        # Iniciando o plot
+
+        fig, ax = plt.subplots()
+
+        #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
+        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\n R²={r2:.4f}' %tuple(popt)
+        # legenda = "f(x) = ax³ + bx² + cx + d"
         
-        ## Soma Total dos Quadrados (SStot)
-        ss_tot = np.sum((y - media) ** 2)
-        print(f"SStot: {ss_tot}")
+        plt.grid(True)
+        plt.plot(x, y, '*')
+        plt.plot(x, func(x, *popt), label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
+        # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
 
-        ## R-quadrado
-        r2 = (ss_reg / ss_tot)
-        # r2 = 1 - (ss_res / ss_tot)
-        print(f"R-quadrado: {r2:.3f}") """
+        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+
+        plt.title('Ajuste polinomial de grau 3')
+        plt.show()
+
 
         # print('Iniciando o histograma...')
 
@@ -497,33 +535,33 @@ class FunctionsCalc:
         # plt.ylabel("frequência")
         # plt.grid()
 
-        print('Iniciando o boxplot...')
+        # print('Iniciando o boxplot...')
         
         # Agrupando os dados, calculando a média e o desvio padrão:
-        data = [Ycolunm] + [Xcolunm]
-        media = []
-        desv_padrao = []
+        # data = [Ycolunm] + [Xcolunm]
+        # media = []
+        # desv_padrao = []
 
-        for i in data:
-            media.append(np.mean(i))
-        for j in data:
-            desv_padrao.append(np.std(j))
+        # for i in data:
+        #     media.append(np.mean(i))
+        # for j in data:
+        #     desv_padrao.append(np.std(j))
 
-        plt.figure()
-        plt.boxplot(data, positions=[1, 2], labels=['fm0211', 'fm0233'], boxprops=dict(color='blue'), whiskerprops=dict(color='red'), capprops=dict(color='green'), medianprops=dict(color='orange'), flierprops=dict(markerfacecolor='white', marker='o'))
+        # plt.figure()
+        # plt.boxplot(data, positions=[1, 2], labels=['fm0211', 'fm0233'], boxprops=dict(color='blue'), whiskerprops=dict(color='red'), capprops=dict(color='green'), medianprops=dict(color='orange'), flierprops=dict(markerfacecolor='white', marker='o'))
 
-        # Configurando a média com pontos vermelhos:
-        for i in range(len(media)):
-            plt.plot(i + 1, media[i], 'ro')
+        # # Configurando a média com pontos vermelhos:
+        # for i in range(len(media)):
+        #     plt.plot(i + 1, media[i], 'ro')
         
-        # Adionando desvio padrão com barras de erro:
-        for i in range(len(desv_padrao)):
-            plt.errorbar(i + 1, media[i], yerr=desv_padrao[i], fmt='o', color='red')
+        # # Adionando desvio padrão com barras de erro:
+        # for i in range(len(desv_padrao)):
+        #     plt.errorbar(i + 1, media[i], yerr=desv_padrao[i], fmt='o', color='red')
         
-        # Outras configurações do gráfico:
-        plt.title('Boxplot Agrupado')
-        plt.ylabel('valores')
-        plt.show()
+        # # Outras configurações do gráfico:
+        # plt.title('Boxplot Agrupado')
+        # plt.ylabel('valores')
+        # plt.show()
 
     def trataOutlier(self, coluna):
         print("Iniciando tratamento de outliers...")
@@ -538,19 +576,112 @@ class FunctionsCalc:
         desv_padrao = np.std(dados)
         cv = (desv_padrao / media) * 100
 
-        print(f"A média ({mu}) de {coluna} é {media:.2f}.")
-        print(f"O {sigma} de {coluna} é {desv_padrao:.2f}.")
-        print(f"O coeficiente de variação de {coluna} é {cv:.2f}.")
+        print(f"Estatística para: {coluna}")
+        print(f"Média ({mu}): {media:.2f}.")
+        print(f"DF {sigma}: {desv_padrao:.2f}.")
+        print(f"Coeficiente de variação: {cv:.2f}%.")
+
+        # self.histograma1(dados, coluna)
+
+        # Método do Devio Padrão
+        valor_corte = desv_padrao * 3
+        valor_superior = media + valor_corte
+        valor_inferior = media - valor_corte
+
+        idx = np.where((dados < valor_inferior) | (dados > valor_superior) )
+        outliersIndice = idx[0]
+
+        # print(indices)
+        # print(f"Dados: {len(dados)} pontos")
+        # print(f"Indices outliers: {len(outliersIndice)} pontos")
+        for i in outliersIndice:
+            dados[i] = media
+
+        self.dadosTratados = dados
+
+        # print(f"Dados sem outliers: {len(dados)} pontos")
+
+        # self.boxplot1(dados, coluna)
+    
+    def trataOutlier2(self, coluna):
+        print("Iniciando tratamento de outliers...")
+
+        self.extractColumn(coluna)
+        dados = self.campo
+
+        sigma = "\u03c3"
+        mu = "\u03bc"
+
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
+        cv = (desv_padrao / media) * 100
+
+        print(f"Estatística para: {coluna}")
+        print(f"Média ({mu}): {media:.2f}.")
+        print(f"DF {sigma}: {desv_padrao:.2f}.")
+        print(f"Coeficiente de variação: {cv:.2f}%.")
+
+        # self.histograma1(dados, coluna)
+
+        # Método do Z-score
+        z_score = []
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
+
+        for i in range(len(dados)-1):
+            z_score.append((dados[i] - media)/desv_padrao)
+
+        dadoTratado = []
+
+        for j in range(len(dados)-1):
+            if z_score[j] < 3:
+                dadoTratado.append(media)
+            else:
+                dadoTratado.append(dados[j])
+
+        # print(indices)
+        # print(f"Dados: {len(dados)} pontos")
+        # print(f"Indices outliers: {len(outliersIndice)} pontos")
+        # for i in outliersIndice:
+        #     dados[i] = media
+
+        self.dadosTratados = dadoTratado
+
+        # print(f"Dados sem outliers: {len(dados)} pontos")
+
+        # self.boxplot1(dados, coluna)
+
+    def boxplot1(self, dados, nome):
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
 
         plt.figure()
+        plt.boxplot(dados, positions=[1], labels=[f'{nome}'], boxprops=dict(color='blue'), whiskerprops=dict(color='red'), capprops=dict(color='green'), medianprops=dict(color='orange'), flierprops=dict(markerfacecolor='white', marker='o'))
+
+        # Configurando a média com pontos vermelhos:
+        plt.plot(1, media, 'ro')
+        
+        # Adionando desvio padrão com barras de erro:
+        plt.errorbar(1, media, yerr=desv_padrao, fmt='o', color='red')
+        
+        # Outras configurações do gráfico:
+        plt.title('Boxplot')
+        plt.ylabel('valores')
+        plt.show()
+
+
+    
+    def histograma1(self, dados, coluna):
+        nome = coluna
+        plt.figure()
         plt.hist(dados, bins=30, color="orange", edgecolor="black")
-        plt.title(f"Histograma {coluna}")
+        plt.title(f"Histograma {nome}")
         plt.xlabel("valor")
         plt.ylabel("frequência")
         plt.grid()
         plt.show()
-    
-    def histograma(self, colunaX, colunaY):
+
+    def histograma2(self, colunaX, colunaY):
         self.extractColumn(colunaX)
         Xcampo = self.campo
 
