@@ -62,6 +62,8 @@ class FunctionsCalc:
         self.colunmNorm = []
         self.colunmOrden = []
         self.dadosTratados = []
+        self.media = 0
+        self.dp = 0
 
 
     def extractColumn(self, coluna):
@@ -74,6 +76,10 @@ class FunctionsCalc:
             # passo para converter a coluna de strings em coluna de floats
             for i in range(len(self.campoColum) - 1):
                 self.campo.append(float(self.campoColum[i]))
+
+            # Definir um intervalo específico
+            listaTemp = self.campo[166050:254700]
+            self.campo = listaTemp
 
     def calcVariacao(self, m = 0):
         k = len(self.campo)
@@ -460,17 +466,53 @@ class FunctionsCalc:
 
     def analise(self, colunaX, colunaY):
 
-        self.trataOutlier(colunaX)
-        self.normalizar2(self.dadosTratados)
-        Xcolunm = self.colunmNorm
-        # Xcolunm = self.colunmOrden
-
-        # self.boxplot1(Xcolunm, colunaX)
-
         self.trataOutlier(colunaY)
         self.normalizar2(self.dadosTratados)
         Ycolunm = self.colunmNorm
         # Ycolunm = self.colunmOrden
+        # media = self.media
+        # desv_padrao = self.dp
+
+        # self.trataOutlier(colunaX)
+        # self.normalizar2(self.dadosTratados)
+        # Xcolunm = self.colunmNorm
+        # Xcolunm = self.colunmOrden
+
+        self.extractColumn(colunaX)
+        dados = self.campo
+
+        sigma = "\u03c3"
+        mu = "\u03bc"
+
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
+        cv = (desv_padrao / media) * 100
+
+        print(f"Estatística para: {colunaX}")
+        print(f"Média ({mu}): {media:.2f}.")
+        print(f"DP {sigma}: {desv_padrao:.2f}.")
+        print(f"Coeficiente de variação: {cv:.2f}%.")
+
+        # self.histograma1(dados, coluna)
+
+        # Método do Devio Padrão
+        valor_corte = desv_padrao * 3
+        valor_superior = media + valor_corte
+        valor_inferior = media - valor_corte
+
+        idx = np.where((dados < valor_inferior) | (dados > valor_superior) )
+        outliersIndice = idx[0]
+
+        # print(indices)
+        # print(f"Dados: {len(dados)} pontos")
+        # print(f"Indices outliers: {len(outliersIndice)} pontos")
+        for i in outliersIndice:
+            dados[i] = media
+
+        self.normalizar2(dados)
+        Xcolunm = self.colunmNorm
+
+        # self.boxplot1(Xcolunm, colunaX)
 
         # self.boxplot1(Ycolunm, colunaY)
 
@@ -516,6 +558,14 @@ class FunctionsCalc:
         # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
 
         plt.title('Ajuste polinomial de grau 3')
+
+        # plt.figure()
+        # plt.grid(True)
+        # plt.plot(y_fit, label="Modelo")
+        # plt.plot(y, label="fm0211")
+        # plt.legend(fontsize=12, frameon=True, framealpha=1, facecolor='white')
+        # plt.title("fm0211 x Modelo")
+
         plt.show()
 
 
@@ -598,6 +648,8 @@ class FunctionsCalc:
             dados[i] = media
 
         self.dadosTratados = dados
+        self.media = media
+        self.dp = desv_padrao
 
         # print(f"Dados sem outliers: {len(dados)} pontos")
 
@@ -717,7 +769,7 @@ class FunctionsCalc:
 
 
 
-    def plotar(self, coluna):
+    def plotarPulsos(self, coluna):
         self.extractColumn(coluna)
 
         self.calcVariacao()
@@ -737,6 +789,25 @@ class FunctionsCalc:
         legenda = "Pulsos: " + str(self.p) + "\n PI: " + str(self.pi)
 
         plt.scatter(self.tempo, self.variacao, label=legenda)
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
+        
+        return plt.show()
+    
+    def plotar(self, coluna):
+        self.extractColumn(coluna)
+
+        # configurações de plotagem
+        ## padrão de estilo
+        plt.style.use('ggplot')
+        plt.figure(figsize=(8,5))
+
+        plt.title(f'Campo elétrido de {coluna}', fontsize=16, fontweight='bold', fontfamily='monospace')
+        plt.xlabel('tempo', fontsize=10, fontfamily='monospace')
+        plt.ylabel('V/m', fontsize=10, fontfamily='monospace')
+
+        tempo = list(range(len(self.campo)))
+        # plt.scatter(tempo, self.campo)
+        plt.plot(self.campo)
         plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
         
         return plt.show()
