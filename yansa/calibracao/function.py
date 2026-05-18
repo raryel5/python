@@ -77,9 +77,15 @@ class FunctionsCalc:
             for i in range(len(self.campoColum) - 1):
                 self.campo.append(float(self.campoColum[i]))
 
+            self.media = np.mean(self.campo)
+
             # Definir um intervalo específico
-            listaTemp = self.campo[166050:254700]
+            # listaTemp = self.campo[166050:254700]
+            listaTemp = self.campo[30000:100000]
+            # listaTemp = self.campo[120000:170000]
             self.campo = listaTemp
+            # print(f"Tamanho do intervalo gerado: {len(self.campo)}")
+
 
     def calcVariacao(self, m = 0):
         k = len(self.campo)
@@ -124,7 +130,7 @@ class FunctionsCalc:
         hashLista = {}
         lista = []
 
-        for i in range(len(self.campo)-1):
+        for i in range(len(self.campo)):
             if hashLista.get(self.campo[i]):
                 lista.append(hashLista[self.campo[i]])
 
@@ -143,8 +149,8 @@ class FunctionsCalc:
 
         # return self.quicksort(listaNormal)
         self.colunmNorm = lista
-        # self.colunmOrden = lista
-        # self.colunmOrden.sort()
+        self.colunmOrden = lista
+        self.colunmOrden.sort()
 
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
 
@@ -156,7 +162,7 @@ class FunctionsCalc:
         hashLista = {}
         lista = []
 
-        for i in range(len(dados)-1):
+        for i in range(len(dados)):
             if hashLista.get(dados[i]):
                 lista.append(hashLista[dados[i]])
 
@@ -167,8 +173,8 @@ class FunctionsCalc:
                 lista.append(valueNorm)
 
                 # normalização entre 0 e 1
-                # valueNorm = (self.campo[i] - min(self.campo))/(max(self.campo)-min(self.campo))
-                # hashLista[self.campo[i]] = valueNorm # arredondado para 4 casas decimais
+                # valueNorm = (dados[i] - min(dados))/(max(dados)-min(dados))
+                # hashLista[dados[i]] = valueNorm # arredondado para 4 casas decimais
                 # lista.append(valueNorm)
         
         # self.exportCSV(listaNormal, f'{coluna}-norm.csv')
@@ -205,6 +211,29 @@ class FunctionsCalc:
 
         # self.exportCSV(self.colunmOrden, 'listaOrdenada.csv')
         # return f"O valor máximo de {coluna} padronizada é {max(self.colunmOrden)}.\nO valor mínimo de {coluna} normalizada é {min(self.colunmOrden)}"
+
+    def padronizar2(self, dados):
+        # hashmap/dicionário
+        hashLista = {}
+        lista = []
+
+        media = np.mean(dados)
+        desv_padrao = np.std(dados)
+
+        for i in range(len(dados)-1):
+            if hashLista.get(dados[i]):
+                lista.append(hashLista[dados[i]])
+
+            else:
+                # Formula de padronização:
+                valuePadron = (dados[i] - media)/(desv_padrao)
+
+                hashLista[dados[i]] = valuePadron # arredondado para 4 casas decimais
+                lista.append(valuePadron)
+        
+        self.colunmPadron = lista
+        self.colunmOrden = lista
+        self.colunmOrden.sort()
 
     # Método de Ordenação Quicksort
     def quicksort(self, array):  
@@ -323,22 +352,37 @@ class FunctionsCalc:
     def ajustePolinomial(self, colunaX, colunaY):
         print("Iniciando o tratamento dos dados...")
 
-        self.normalizar(colunaX)
-        Xcolunm = self.colunmNorm
-        self.normalizar(colunaY)
-        Ycolunm = self.colunmNorm
+        # self.normalizar(colunaY)
+        # Ycolunm = self.colunmNorm
+        self.padronizar(colunaY)
+        Ycolunm = self.colunmPadron
+        campoY = self.campo
+
+        self.ajusteMedia(colunaX)
+        # self.normalizar2(self.campo)
+        # Xcolunm = self.colunmNorm
+        self.padronizar2(self.campo)
+        Xcolunm = self.colunmPadron
+        campoX = self.campo
+
         print("Normalização completa.")
 
-        # self.padronizar(colunaX)
-        # # Xcolunm = self.colunmPadron
         # self.padronizar(colunaY)
-        # # Ycolunm = self.colunmPadron
+        # Ycolunm = self.colunmPadron
+        # self.padronizar(colunaX)
+        # Xcolunm = self.colunmPadron
         # print("Padronização completa.")
 
         print("Iniciando ajuste polinomial...")
 
-        x = np.array(Xcolunm)
-        y = np.array(Ycolunm)
+        # x = np.array(Xcolunm)
+        # y = np.array(Ycolunm)
+
+        x = np.array(campoX)
+        y = np.array(campoY)
+
+        x.sort()
+        y.sort()
 
         def func(x, a, b, c, d):
             return a*x**3 + b*x**2 + c*x + d
@@ -355,15 +399,15 @@ class FunctionsCalc:
 
         ## Soma dos Quadrados dos Resíduos (SSres)
         ss_res = np.sum((y - y_fit) ** 2)
-        print(f"SSres: {ss_res}")
+        # print(f"SSres: {ss_res}")
 
         ## Soma dos Quadrados Explicada (SSreg)
         ss_reg = np.sum((y_fit - media)**2)
-        print(f"SSreg: {ss_reg}")
+        # print(f"SSreg: {ss_reg}")
         
         ## Soma Total dos Quadrados (SStot)
         ss_tot = np.sum((y - media) ** 2)
-        print(f"SStot: {ss_tot}")
+        # print(f"SStot: {ss_tot}")
 
         ## R-quadrado
         r2 = (ss_reg / ss_tot)
@@ -376,11 +420,11 @@ class FunctionsCalc:
         print("Ajuste completo!")
 
         ## Iniciando o plot
-
+        plt.style.use('ggplot')
         fig, ax = plt.subplots()
 
         #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
-        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\n R² {r2:.4f}' %tuple(popt)
+        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\nR² = {r2:.4f}' %tuple(popt)
         # legenda = "f(x) = ax³ + bx² + cx + d"
         
         plt.grid(True)
@@ -392,16 +436,18 @@ class FunctionsCalc:
         # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
 
         plt.title('Ajuste polinomial de grau 3')
+
+        # Plot dos campos elétricos
+        plt.style.use('ggplot')
+        plt.figure(figsize=(8,5))
+        plt.title(f'Campo elétrido', fontsize=16, fontweight='bold', fontfamily='monospace')
+        plt.xlabel('tempo', fontsize=10, fontfamily='monospace')
+        plt.ylabel('V/m', fontsize=10, fontfamily='monospace')
+        plt.plot(campoX, label="fm0233")
+        plt.plot(campoY, label="fm0211")
+        plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
+        
         plt.show()
-
-        # deg = 3
-        # z = np.polyfit(x, y, deg)
-        # y2 = np.poly1d(z)
-
-        # plt.plot(x, y, "*")
-        # plt.plot(x, y2(x), "-")
-        # plt.title('Ajuste polinomial de grau 3')
-        # plt.show()
 
     def ajustePol1(self, colunaX, colunaY):
         print("Iniciando normalização e ordenação dos dados...")
@@ -464,13 +510,52 @@ class FunctionsCalc:
         plt.title('Ajuste polinomial de grau 1')
         plt.show()
 
+    def ajusteMedia(self, coluna):
+        mediaRef = self.media
+
+        self.extractColumn(coluna)
+        media = self.media
+
+        delta = mediaRef - media
+
+        # hashmap/dicionário
+        hashLista = {}
+        lista = []
+
+        if delta < 0:
+            for i in range(len(self.campo)):
+                if hashLista.get(self.campo[i]):
+                    lista.append(hashLista[self.campo[i]])
+
+                else:
+                    value = self.campo[i] + delta
+                    hashLista[self.campo[i]] = value
+                    lista.append(value)
+
+        if delta > 0:
+            for i in range(len(self.campo)):
+                if hashLista.get(self.campo[i]):
+                    lista.append(hashLista[self.campo[i]])
+
+                else:
+                    value = self.campo[i] + delta
+                    hashLista[self.campo[i]] = value
+                    lista.append(value)
+        self.campo = lista
+
     def analise(self, colunaX, colunaY):
 
-        self.trataOutlier(colunaY)
-        self.normalizar2(self.dadosTratados)
-        Ycolunm = self.colunmNorm
+        self.trataOutlier2(colunaY)
+
+        print(f"Inciando normalização de {colunaY}")
+
+        # self.normalizar2(self.dadosTratados)
+        self.padronizar2(self.dadosTratados)
+        # Ycolunm = self.colunmNorm
         # Ycolunm = self.colunmOrden
-        # media = self.media
+        Ycolunm = self.colunmPadron
+
+        # mediaG = self.media
         # desv_padrao = self.dp
 
         # self.trataOutlier(colunaX)
@@ -484,6 +569,7 @@ class FunctionsCalc:
         sigma = "\u03c3"
         mu = "\u03bc"
 
+        # media = round(np.mean(dados), 2)
         media = np.mean(dados)
         desv_padrao = np.std(dados)
         cv = (desv_padrao / media) * 100
@@ -495,22 +581,52 @@ class FunctionsCalc:
 
         # self.histograma1(dados, coluna)
 
-        # Método do Devio Padrão
-        valor_corte = desv_padrao * 3
-        valor_superior = media + valor_corte
-        valor_inferior = media - valor_corte
+        # # Método do Devio Padrão
+        # valor_corte = desv_padrao * 3
+        # valor_superior = media + valor_corte
+        # valor_inferior = media - valor_corte
 
-        idx = np.where((dados < valor_inferior) | (dados > valor_superior) )
-        outliersIndice = idx[0]
+        # idx = np.where((dados < valor_inferior) | (dados > valor_superior) )
+        # outliersIndice = idx[0]
 
-        # print(indices)
-        # print(f"Dados: {len(dados)} pontos")
-        # print(f"Indices outliers: {len(outliersIndice)} pontos")
-        for i in outliersIndice:
-            dados[i] = media
+        # # print(indices)
+        # # print(f"Dados: {len(dados)} pontos")
+        # # print(f"Indices outliers: {len(outliersIndice)} pontos")
 
-        self.normalizar2(dados)
-        Xcolunm = self.colunmNorm
+        # print(f"Substituindo outliers pela média {media}...")
+
+        # for i in outliersIndice:
+        #     dados[i] = media
+
+        # Método do Z-score
+        z_score = []
+        # media = np.mean(dados)
+        # desv_padrao = np.std(dados)
+
+        for i in range(len(dados)):
+            z_score.append((dados[i] - media)/desv_padrao)
+
+        print(f"Zscore min: {np.min(z_score)}")
+        print(f"Zscore max: {np.max(z_score)}")
+
+        dadoTratado = []
+
+        for j in range(len(dados)-1):
+            if z_score[j] >= 3 or z_score[j] <= -3:
+                dadoTratado.append(media)
+            else:
+                dadoTratado.append(dados[j])
+
+        dados = dadoTratado
+
+        # print(f"Foram substituídos {len(outliersIndice)} outliers.")
+
+        print(f"Iniciando normalização de {colunaX}")
+        # self.normalizar2(dados)
+        self.padronizar2(dados)
+        # Xcolunm = self.colunmNorm
+        # Xcolunm = self.colunmOrden
+        Xcolunm = self.colunmPadron
 
         # self.boxplot1(Xcolunm, colunaX)
 
@@ -622,7 +738,7 @@ class FunctionsCalc:
         sigma = "\u03c3"
         mu = "\u03bc"
 
-        media = np.mean(dados)
+        media = round(np.mean(dados), 2)
         desv_padrao = np.std(dados)
         cv = (desv_padrao / media) * 100
 
@@ -644,12 +760,15 @@ class FunctionsCalc:
         # print(indices)
         # print(f"Dados: {len(dados)} pontos")
         # print(f"Indices outliers: {len(outliersIndice)} pontos")
+        print(f"Substituindo outliers pela média {media}...")
         for i in outliersIndice:
             dados[i] = media
 
+        print(f"Foram substituídos {len(outliersIndice)} outliers.")
+
         self.dadosTratados = dados
-        self.media = media
-        self.dp = desv_padrao
+        # self.media = media
+        # self.dp = desv_padrao
 
         # print(f"Dados sem outliers: {len(dados)} pontos")
 
@@ -767,8 +886,6 @@ class FunctionsCalc:
         plt.show()
 
 
-
-
     def plotarPulsos(self, coluna):
         self.extractColumn(coluna)
 
@@ -813,12 +930,20 @@ class FunctionsCalc:
         return plt.show()
 
     def plotContra(self, colunaX, colunaY):
-        self.normalizar(colunaX)
-        Xcolunm = self.colunmOrden
+        # self.normalizar(colunaX)
+        self.padronizar(colunaX)
+        # Xcolunm = self.colunmNorm
+        Xcolunm = self.colunmPadron
+        # Xcolunm = self.colunmOrden
+        # Xcolunm = self.campo
         print(f"o tamanho de X é {len(Xcolunm)}")
 
-        self.normalizar(colunaY)
-        Ycolunm = self.colunmOrden
+        # self.normalizar(colunaY)
+        self.padronizar(colunaY)
+        # Xcolunm = self.colunmNorm
+        Ycolunm = self.colunmPadron
+        # Ycolunm = self.colunmOrden
+        # Ycolunm = self.campo
         print(f"o tamanho de Y é {len(Ycolunm)}")
 
         # configurações de plotagem
@@ -830,7 +955,8 @@ class FunctionsCalc:
         plt.xlabel('Sensor para calibrar: ' + colunaX, fontsize=10, fontfamily='monospace')
         plt.ylabel('Referência: ' + colunaY, fontsize=10, fontfamily='monospace')
         #
-        plt.scatter(Xcolunm, Ycolunm)
+        # plt.scatter(Xcolunm, Ycolunm, label="combinação.")
+        plt.plot(Xcolunm, Ycolunm, label="combinação.")
         plt.legend(fontsize=12, frameon=True, framealpha=0.7 , facecolor='white')
         
         return plt.show()
