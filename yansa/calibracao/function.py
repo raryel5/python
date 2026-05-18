@@ -375,14 +375,14 @@ class FunctionsCalc:
 
         print("Iniciando ajuste polinomial...")
 
-        # x = np.array(Xcolunm)
-        # y = np.array(Ycolunm)
+        x = np.array(Xcolunm)
+        y = np.array(Ycolunm)
 
-        x = np.array(campoX)
-        y = np.array(campoY)
+        # x = np.array(campoX)
+        # y = np.array(campoY)
 
-        x.sort()
-        y.sort()
+        # x.sort()
+        # y.sort()s
 
         def func(x, a, b, c, d):
             return a*x**3 + b*x**2 + c*x + d
