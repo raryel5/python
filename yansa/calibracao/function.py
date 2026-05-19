@@ -64,6 +64,7 @@ class FunctionsCalc:
         self.dadosTratados = []
         self.media = 0
         self.dp = 0
+        self.delta = 0
 
 
     def extractColumn(self, coluna):
@@ -432,8 +433,8 @@ class FunctionsCalc:
         plt.plot(x, func(x, *popt), label=legenda)
         plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
         # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
-
-        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+        textstr = f'X0 = {self.delta%5.3f}'
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
 
         plt.title('Ajuste polinomial de grau 3')
 
@@ -516,29 +517,29 @@ class FunctionsCalc:
         self.extractColumn(coluna)
         media = self.media
 
-        delta = mediaRef - media
+        self.delta = mediaRef - media
 
         # hashmap/dicionário
         hashLista = {}
         lista = []
 
-        if delta < 0:
+        if self.delta < 0:
             for i in range(len(self.campo)):
                 if hashLista.get(self.campo[i]):
                     lista.append(hashLista[self.campo[i]])
 
                 else:
-                    value = self.campo[i] + delta
+                    value = self.campo[i] + self.delta
                     hashLista[self.campo[i]] = value
                     lista.append(value)
 
-        if delta > 0:
+        if self.delta > 0:
             for i in range(len(self.campo)):
                 if hashLista.get(self.campo[i]):
                     lista.append(hashLista[self.campo[i]])
 
                 else:
-                    value = self.campo[i] + delta
+                    value = self.campo[i] + self.delta
                     hashLista[self.campo[i]] = value
                     lista.append(value)
         self.campo = lista
