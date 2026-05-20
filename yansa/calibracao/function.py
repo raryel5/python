@@ -358,6 +358,7 @@ class FunctionsCalc:
         self.padronizar(colunaY)
         Ycolunm = self.colunmPadron
         campoY = self.campo
+        mediaY = self.media
 
         self.ajusteMedia(colunaX)
         # self.normalizar2(self.campo)
@@ -425,23 +426,24 @@ class FunctionsCalc:
         fig, ax = plt.subplots()
 
         #legenda = f'%5.6f x³ + %5.6f x² + %5.6f x + %5.6f\n{r2:.4f}' %tuple(popt)
-        legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\nR² = {r2:.4f}' %tuple(popt)
+        # legenda = f'x3=%5.6f\nx2=%5.6f\nx1=%5.6f\nx0=%5.6f\nR² = {r2:.4f}' %tuple(popt)
+        legenda = f'x0 = {mediaY:.3f}\nx1 = {popt[2]:5.6f}\nR² = {r2:.4f}'
         # legenda = "f(x) = ax³ + bx² + cx + d"
-        
+        # print(popt[2])
         plt.grid(True)
         plt.plot(x, y, '*')
         plt.plot(x, func(x, *popt), label=legenda)
         plt.legend(fontsize=12, frameon=True, framealpha=0.7, facecolor='white')
         # textstr = 'a=%5.4f\nb=%5.4f\nc=%5.4f\nd=%5.4f' %tuple(popt)
-        textstr = f'X0 = {self.delta%5.3f}'
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top')        
+        # textstr = f'X0 = {self.delta:.3f}\nx1 = {popt[2]:5.6f}'
+        # ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', backgroundcolor="white", alpha=0.7)        
 
-        plt.title('Ajuste polinomial de grau 3')
+        plt.title('Ajuste polinomial de grau 3', fontsize=16, fontweight='bold', fontfamily='monospace')
 
         # Plot dos campos elétricos
         plt.style.use('ggplot')
         plt.figure(figsize=(8,5))
-        plt.title(f'Campo elétrido', fontsize=16, fontweight='bold', fontfamily='monospace')
+        plt.title(f'Campo elétrico', fontsize=16, fontweight='bold', fontfamily='monospace')
         plt.xlabel('tempo', fontsize=10, fontfamily='monospace')
         plt.ylabel('V/m', fontsize=10, fontfamily='monospace')
         plt.plot(campoX, label="fm0233")
@@ -517,32 +519,36 @@ class FunctionsCalc:
         self.extractColumn(coluna)
         media = self.media
 
-        self.delta = mediaRef - media
+        delta = mediaRef - media
+        # delta = 0.7 * delta
+        print(f"média fm0211: {mediaRef:.2f}, média fm0233: {media:.2f}, delta: {delta:.2f}.")
 
         # hashmap/dicionário
         hashLista = {}
         lista = []
 
-        if self.delta < 0:
+        if delta < 0:
             for i in range(len(self.campo)):
                 if hashLista.get(self.campo[i]):
                     lista.append(hashLista[self.campo[i]])
 
                 else:
-                    value = self.campo[i] + self.delta
+                    value = self.campo[i] + delta
                     hashLista[self.campo[i]] = value
                     lista.append(value)
 
-        if self.delta > 0:
+        if delta > 0:
             for i in range(len(self.campo)):
                 if hashLista.get(self.campo[i]):
                     lista.append(hashLista[self.campo[i]])
 
                 else:
-                    value = self.campo[i] + self.delta
+                    value = self.campo[i] + delta
                     hashLista[self.campo[i]] = value
                     lista.append(value)
+
         self.campo = lista
+        self.delta = delta
 
     def analise(self, colunaX, colunaY):
 
