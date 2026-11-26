@@ -2,8 +2,16 @@ import matplotlib.pyplot as plt
 import xarray as xr
 
 # 1. Abre o arquivo NetCDF
-d_seco = xr.open_dataset("maoaafcpcF1.b1.20140222.143709.nc")
-d_umid = xr.open_dataset("maoaafcpcF1.b1.20140909.150111.nc")
+# Para abrir multiplos aquivos usamos o método "open multi-file dataset"
+# Esta é a forma mais direta e eficiente, pois utiliza o Dask em segundo plano
+# para carregar os dados de forma preguiçosa (lazy loading), economizando memória RAM.
+# combine="by_coords": Ordena e combina os arquivos automaticamente com base nas coordenadas (ex: tempo, latitude).
+# combine="nested" e concat_dim="time": Útil quando os arquivos não têm uma coordenada clara de junção e você quer empilhá-los ao longo de uma nova ou específica dimensão.
+# parallel=True: Acelera a leitura abrindo os arquivos em paralelo.
+
+d_seco = xr.open_mfdataset("seco/*.nc",  combine="nested", concat_dim="time")
+# d_umid = xr.open_mfdataset("umido/*.nc", combine="by_coords")
+d_umid = xr.open_mfdataset("umido/*.nc", combine="nested", concat_dim="time")
 
 # 2. Seleciona a variável concentration
 Na_seco = d_seco["concentration"]

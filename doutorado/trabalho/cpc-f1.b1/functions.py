@@ -1,7 +1,7 @@
 import xarray as xr
 
 # 1. Abrir o dataset
-ds = xr.open_dataset('maoaafcpcF1.b1.20140222.143709.nc')
+ds = xr.open_dataset('seco/maoaafcpcF1.b1.20140222.143709.nc')
 
 # 2. Ver as variáveis disponíveis
 print(ds)

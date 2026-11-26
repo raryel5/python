@@ -1,7 +1,7 @@
 import netCDF4 as nc
 
 # 1. Abrir o arquivo NetCDF
-ds = nc.Dataset('maoaafcpcF1.b1.20140222.143709.nc', 'r')
+ds = nc.Dataset('seco/maoaafcpcF1.b1.20140222.143709.nc', 'r')
 
 # 2. Listar as variáveis do arquivo
 print(ds.variables.keys())
